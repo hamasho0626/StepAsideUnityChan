@@ -10,73 +10,101 @@ public class ItemGenerator : MonoBehaviour {
     public GameObject coinPrefab;
     //cornPreafabを入れる
     public GameObject cornPrefab;
-    //スタート地点
-    private int startPos = -160;
-    //ゴール地点
-    private int goalPos = 120;
+    //スタート地点 いらない？
+    //private int startPos = -160;
+    //ゴール地点　いらない？
+    //private int goalPos = 120;
     //アイテムを出す　＊　方向の範囲
     private float posRange = 3.4f;
+
 
     //ユニティちゃん用の変数を用意
     private GameObject UnityChan;
 
-    //ユニティちゃんの位置を入れる変数
+    //ユニティちゃんの現在位置を入れる変数
     private float UnityPos;
 
-	// Use this for initialization
-	void Start () {
+    //ユニティちゃんの前回の位置
+    private float UnityBeforPos;
+
+    //ユニティちゃんの進んだ距離
+    private float MovingDistance;
+
+    //生成停止位置　(ゴールの位置 - ユニティの現在位置 = 65)
+    private int RestDistance = 65;
+
+    //生成開始位置 (startPos + 50(生成が５０ｍ先のため) = 210)
+    private int GenerateStartPos = -210;
+
+    //生成を許可するキー
+    private bool GenerateKey = false;
+    
+
+    // Use this for initialization
+    void Start () {
+        //ユニティちゃんのオブジェクトを取得
         this.UnityChan = GameObject.Find("unitychan");
-	}
-	
-	// Update is called once per frame
-	void Update () {
+        //ユニティちゃんのスタート位置を取得
+        this.UnityBeforPos = UnityChan.transform.position.z;
+    }
+
+    // Update is called once per frame
+    void Update() {
 
         //ユニティちゃんの位置を取得
         this.UnityPos = UnityChan.transform.position.z;
-        Debug.Log(this.UnityPos); 
+        //移動距離を取得
+        this.MovingDistance = this.UnityPos - this.UnityBeforPos;
 
-
-        if(this.UnityPos % 15 == 0)
+        /* Unityが生成開始位置を通り過ぎていない　＆＆　ゴールまでの距離が65ｍをきる*/
+        if(this.RestDistance < this.UnityPos || this.UnityPos < this.GenerateStartPos)
         {
-            for (int i = startPos; i < goalPos; i += 15)
+            GenerateKey = true;
+        }  else
+        {
+            GenerateKey = false;
+        }
+
+        //１５ｍ移動するごとにアイテムを生成する
+        if (this.MovingDistance > 15 && GenerateKey == false) {
+
+            //現在のユニティの位置をUnityBeforPosに保存する
+            this.UnityBeforPos = this.UnityPos;
+
+            //どのアイテムを出すのかをランダムに設定
+            int num = Random.Range(1, 11);
+            if (num <= 2)
             {
-                //どのアイテムを出すのかをランダムに設定
-                int num = Random.Range(1, 11);
-                if (num <= 2)
+                //コーンをx軸方向に一直線に生成
+                for (float j = -1; j <= 1; j += 0.4f)
                 {
-                    //コーンをx軸方向に一直線に生成
-                    for (float j = -1; j <= 1; j += 0.4f)
-                    {
-                        GameObject cone = Instantiate(cornPrefab) as GameObject;
-                        cone.transform.position = new Vector3(4 * j, cone.transform.position.y, i);
-                    }
+                    GameObject cone = Instantiate(cornPrefab) as GameObject;
+                    cone.transform.position = new Vector3(4 * j, cone.transform.position.y, UnityPos + 50);
                 }
-                else
+            }
+            else
+            {
+                //レーンごとにアイテムを生成
+                for (int j = -1; j <= 1; j++)
                 {
-                    //レーンごとにアイテムを生成
-                    for (int j = -1; j <= 1; j++)
+                    int item = Random.Range(1, 11);
+                    //アイテムをおくZ座標のオフセットをランダムに設定
+                    int offsetz = Random.Range(-5, 6);
+                    //60%コイン配置：３０％車を配置：１０％で何もなし
+                    if (1 <= item && item <= 6)
                     {
-                        int item = Random.Range(1, 11);
-                        //アイテムをおくZ座標のオフセットをランダムに設定
-                        int offsetz = Random.Range(-5, 6);
-                        //60%コイン配置：３０％車を配置：１０％で何もなし
-                        if (1 <= item && item <= 6)
-                        {
-                            //コインを生成
-                            GameObject coin = Instantiate(coinPrefab) as GameObject;
-                            coin.transform.position = new Vector3(posRange * j, coin.transform.position.y, i + offsetz);
-                        }
-                        else if (7 <= item && item <= 9)
-                        {
-                            GameObject car = Instantiate(carPrefab) as GameObject;
-                            car.transform.position = new Vector3(posRange * j, car.transform.position.y, i + offsetz);
-                        }
+                        //コインを生成
+                        GameObject coin = Instantiate(coinPrefab) as GameObject;
+                        coin.transform.position = new Vector3(posRange * j, coin.transform.position.y, UnityPos + 50 + offsetz);
+                    }
+                    else if (7 <= item && item <= 9)
+                    {
+                        GameObject car = Instantiate(carPrefab) as GameObject;
+                        car.transform.position = new Vector3(posRange * j, car.transform.position.y, UnityPos + 50 + offsetz);
                     }
                 }
             }
         }
-        
-    }
 
-    
+    }
 }
