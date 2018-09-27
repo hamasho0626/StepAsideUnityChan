@@ -10,10 +10,6 @@ public class ItemGenerator : MonoBehaviour {
     public GameObject coinPrefab;
     //cornPreafabを入れる
     public GameObject cornPrefab;
-    //スタート地点 いらない？
-    //private int startPos = -160;
-    //ゴール地点　いらない？
-    //private int goalPos = 120;
     //アイテムを出す　＊　方向の範囲
     private float posRange = 3.4f;
 
